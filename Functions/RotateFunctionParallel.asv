@@ -1,0 +1,45 @@
+function [re_rotated_predictions] = RotateFunctionParallel(X_test, Y_test, R_list, net)
+
+    re_rotated_predictions = cell(size(X_test));
+
+    nRandomRotation = length(R_list);
+    
+    newX_train = cell(length(X_train)*nRandomRotation,1);
+    newY_train = cell(length(X_train)*nRandomRotation,1);
+
+    % New approach "parallel"
+    for j = 1:length(X_train)
+
+        disp(j);
+
+        x = X_train{j};
+        y = Y_train{j};
+
+        for k = 1:nRandomRotation
+            r = R_list{k};
+
+            [xRotated, yRotated] = preformRotation(x,y,r);
+    
+            newX_train{length(X_train)*(k-1)+j} = xRotated;
+            newY_train{length(X_train)*(k-1)+j} = yRotated;
+
+            inverse{k} = r';
+        end
+    end
+
+    % Predict with rotated training data
+    predictions = predict(net, newX_train);
+    
+    for j = 1:length(predictions)
+        x = X_train{j};
+        y = Y_train{j};
+
+        tmpR = inverse{j/length(X_train)}
+            
+            [xRotated, yRotated] = preformRotation(x,y,tmpR);
+        
+            newX_train{length(X_train)*(k-1)+j} = xRotated;
+            newY_train{length(X_train)*(k-1)+j} = yRotated;
+        end
+    end
+end

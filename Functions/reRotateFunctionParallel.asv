@@ -1,0 +1,39 @@
+function [MeREs] = reRotateFunctionParallel(X_test, Y_test, R_list, net)
+
+    nRandomRotation = length(R_list);
+    
+    % Prepare cell arrays to hold rotated test data and inverse rotations
+    newX_test = cell(length(X_test) * nRandomRotation, 1);
+    newY_test = cell(length(X_test) * nRandomRotation, 1);
+    inverse = cell(nRandomRotation, 1);
+
+    % Rotate testing data
+    for j = 1:length(X_test)
+        x = X_test{j};
+        y = Y_test{j};
+
+        for k = 1:nRandomRotation
+            r = R_list{k};
+            [xRotated, yRotated] = performRotation(x, y, r);
+            idx = length(X_test) * (k - 1) + j;
+            newX_test{idx} = xRotated;
+            newY_test{idx} = yRotated;
+        end
+    end
+
+    % Predict with rotated testing data
+    predictions = predict(net, newX_test);
+    
+    % Calculate average MeRE given a rotation
+    for i = 1:length(X_test)
+        for k = 1:nRandomRotation
+            y = newY_test{i*k};
+            vonMisesTarget = calculateVonMisesStress(y);
+            vonMisesPrediction = calculateVonMisesStress(predictions{i*k});
+            absolute_error = abs(vonMisesPrediction - vonMisesTarget);
+            MeREs(i*k) = sqrt(mean(absolute_error.^2)) / range(vonMisesTarget);
+        end 
+        meanMeRE= 
+    end
+
+end
